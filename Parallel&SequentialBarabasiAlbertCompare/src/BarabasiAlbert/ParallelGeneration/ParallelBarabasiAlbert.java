@@ -8,18 +8,14 @@ package BarabasiAlbert.ParallelGeneration;
 import Utility.nodePair;
 import Utility.WriteFile;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.graphstream.graph.*;
@@ -34,7 +30,6 @@ public class ParallelBarabasiAlbert {
         int K; //Numbers of nodes which connect to first graph in parallel
     //Threads Manager
         ExecutorService executor;
-       // Executor e ;
     //time
         long startTime;
         long estimatedTime;
@@ -61,7 +56,6 @@ public class ParallelBarabasiAlbert {
             V = firstGraph.getNodeCount();
         //Threads Manager
             executor = Executors.newFixedThreadPool(4);
-            //e = Executors.newFixedThreadPool(4);
         //D & P Array
             this.D = D;
             this.P = P;
@@ -123,10 +117,8 @@ public class ParallelBarabasiAlbert {
         w3.writeToFile("", false);
        
     }
-    
-    public Graph makeParallelBarabasiAlbert(int i) throws InterruptedException, ExecutionException, IOException{
-        
-        K=i;
+    private void initialize()
+    {
         //Target nodes list
         List PR = new LinkedList<>();
         ParallelResult = PR;
@@ -142,6 +134,11 @@ public class ParallelBarabasiAlbert {
         for(int j=1; j<K+1 ; j++)
             IsFined[j] = false;
         LastNode = 0;
+    }
+    public Graph makeParallelBarabasiAlbert(int i) throws InterruptedException, ExecutionException, IOException{
+        
+        K=i;
+        initialize();
         getResultsOfAddingKNodesToGraph();
         Graph newGraph = UpdatedGraph();
         return newGraph;
@@ -203,181 +200,7 @@ public class ParallelBarabasiAlbert {
         }
     }
     
-    private int countTargetNodesFromThis(int Z ){
-        
-        int numberOfTargetsFromThis=0;
-        for(int j=0; j<ParallelResult.size() ; j++)
-        {
-            nodePair np = (nodePair) ParallelResult.get(j);
-            if(np.value() >= Z)
-            {
-                numberOfTargetsFromThis++;
-            }
-        }
-        return numberOfTargetsFromThis;
-    }
-   
-    private void findTargetNodesByThread() throws IOException, InterruptedException, ExecutionException
-    {
-        //Log
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
-        nodePair np;
-        int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
-        for(int i=1; i<=K ; i++)
-        {
-            if(IsFined[i] == false)
-            {
-                if(P[i]> FirstArrayLastIndex)
-                {
-                    findTargetNodeAmongCandidateNodesByThread(i);
-                }
-                else
-                {
-                    np = (nodePair) CandidateNodes[i].get(0);
-                    int Z = np.key();
-                    int T = np.value();
-                    int c=0;
-                    if(A[i]<= T)
-                    {
-                        nodePair PairNode = new nodePair(V+i, Z);
-                        ParallelResult.add(PairNode);
-                        dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(Z)).concat(")")), true);
-                        if(i == LastNode+1)
-                            LastNode++;
-                        continue;
-                    }
-                    
-                    int j=1;
-                    while(j<CandidateNodes[i].size())
-                    {
-                        np = (nodePair) CandidateNodes[i].get(j);
-                        Z = np.key();
-                        T = np.value();
-                        c=countOfOne( Z);
-                        if(A[i]<=T+c)
-                        {
-                            nodePair PairNode = new nodePair(V+i, Z);
-                            ParallelResult.add(PairNode);
-                            dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(Z)).concat(")")), true);
-                            if(i == LastNode+1)
-                                LastNode++;
-                            break;
-                        }
-                        j++;
-                    }
-                }
-            }
-        }
-    }
-    
-    private int countOfOne(int Z)
-    {
-        int numberOfTargetsFromThis=0;
-        for(int j=0; j<ParallelResult.size() ; j++)
-        {
-            nodePair np = (nodePair) ParallelResult.get(j);
-            if(np.value() == Z)
-            {
-                numberOfTargetsFromThis++;
-            }
-        }
-        return numberOfTargetsFromThis;
-    }
-    
-    private void findTargetNodeAmongCandidateNodesByThread(int i ) throws InterruptedException, ExecutionException
-    {
-        Set<Future> set = new HashSet<>();
-        for(int j=0 ; j<CandidateNodes[i].size() ; j++)
-        {
-           nodePair np = (nodePair) CandidateNodes[i].get(j);
-           Future future = executor.submit(new Task2(i , np));
-           set.add(future);
-        }
-         //wait for task completion
-        for(Future currTask : set){
-            try{
-                currTask.get();
-            }
-            catch(Throwable thrown)
-                    {
-                        System.out.println("Error");
-                    }        
-        }
-        
-    }
-    
-    private final class Task2 implements Runnable {
-        
-        nodePair np;
-        int c;
-        int i;
-        Task2(int i , nodePair np){
-          this.np = np;
-          this.i = i;
-          c = countTargetNodesFromThis(np.key());
-        }
-        
-        @Override public void run(){
-            
-            try {
-                CheckThisCandidateNode(i , np , c);
-            } catch (IOException ex) {
-                Logger.getLogger(ParallelBarabasiAlbert.class.getName()).log(Level.SEVERE, null, ex);
-            }
-          
-        }
-    }
-    private void CheckThisCandidateNode(int i , nodePair np , int c) throws IOException
-    {
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
-        
-        if(np.value()>0)
-        {
-            if(c>=np.value())
-            {
-                nodePair PairNode = new nodePair(V+i, np.key());
-                ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
-                IsFined[i] = true;
-                if(i == LastNode+1)
-                    LastNode++;
-                
-            }
-        }
-        else if(np.value()==0)
-        {
-            if(c==np.value())
-            {
-                nodePair PairNode = new nodePair(V+i, np.key());
-                ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
-                IsFined[i] = true;
-                if(i == LastNode+1)
-                    LastNode++;
-                
-            }
-        }
-        else //np.value()<0
-        {
-            if(c==0)
-            {
-                nodePair PairNode = new nodePair(V+i, np.key());
-                ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
-                IsFined[i] = true;
-                if(i == LastNode+1)
-                    LastNode++;
-                
-            }
-            
-        }
-        
-    }
-   
-        
-    private void findCandidateNodesByThreads() throws InterruptedException, ExecutionException
+     private void findCandidateNodesByThreads() throws InterruptedException, ExecutionException
     {
          
         Set<Future> set = new HashSet<>();
@@ -417,65 +240,6 @@ public class ParallelBarabasiAlbert {
                 Logger.getLogger(ParallelBarabasiAlbert.class.getName()).log(Level.SEVERE, null, ex);
             }
          
-        }
-    }
-    private void checkForTarget(int i) throws IOException
-    {
-        int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
-        nodePair np;
-        
-        if(CandidateNodes[i].size() == 1)
-        {
-            np = (nodePair) CandidateNodes[i].get(0);
-            nodePair PairNode = new nodePair(V+i, np.key());
-            ParallelResult.add(PairNode);
-            dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
-            IsFined[i] = true;
-            if(i == LastNode+1)
-                LastNode++;
-            return;
-        }
-        if(P[i]<FirstArrayLastIndex)
-        {
-            
-            np = (nodePair) CandidateNodes[i].get(0);
-            if(A[i]<= np.value())
-            {
-                        nodePair PairNode = new nodePair(V+i, np.key());
-                        ParallelResult.add(PairNode);
-                        dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
-                        IsFined[i] = true;
-                        if(i == LastNode+1)
-                            LastNode++;
-                        return;
-            }
-            if(i == LastNode+1)
-            {
-                int j=1;
-                int Z;
-                int T;
-                int c;
-                    while(j<CandidateNodes[i].size())
-                    {
-                        np = (nodePair) CandidateNodes[i].get(j);
-                        Z = np.key();
-                        T = np.value();
-                        c=countOfOne( Z);
-                        if(A[i]<=T+c)
-                        {
-                            nodePair PairNode = new nodePair(V+i, Z);
-                            ParallelResult.add(PairNode);
-                            dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(Z)).concat(")")), true);
-                            IsFined[i] = true;
-                            if(i == LastNode+1)
-                                LastNode++;
-                            break;
-                        }
-                        j++;
-                    }
-            }
         }
     }
     
@@ -566,6 +330,7 @@ public class ParallelBarabasiAlbert {
         }
          return R;
     }
+    
     private int find(int Pi)
     {
         
@@ -595,6 +360,212 @@ public class ParallelBarabasiAlbert {
          
         }
         return mid;
+    }
+    
+    private void checkForTarget(int i) throws IOException
+    {
+        int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
+        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        nodePair np;
+        
+        if(CandidateNodes[i].size() == 1)
+        {
+            np = (nodePair) CandidateNodes[i].get(0);
+            addToResult(i, np.key(), dataTargetNodes);
+            return;
+        }
+        if(P[i]<FirstArrayLastIndex)
+        {
+            
+            np = (nodePair) CandidateNodes[i].get(0);
+            if(A[i]<= np.value())
+            {
+                addToResult(i, np.key(), dataTargetNodes);
+                return;
+            }
+            if(i == LastNode+1)
+            {
+                int j=1;
+                int Z;
+                int T;
+                int c;
+                    while(j<CandidateNodes[i].size())
+                    {
+                        np = (nodePair) CandidateNodes[i].get(j);
+                        Z = np.key();
+                        T = np.value();
+                        c=countOfOne( Z);
+                        if(A[i]<=T+c)
+                        {
+                            addToResult(i, Z, dataTargetNodes);
+                            break;
+                        }
+                        j++;
+                    }
+            }
+        }
+    }
+    
+    private void addToResult(int i , int Z , WriteFile dataTargetNodes) throws IOException
+    {
+        String f="(";
+        nodePair PairNode = new nodePair(V+i, Z);
+        ParallelResult.add(PairNode);
+        dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(Z)).concat(")")), true);
+        IsFined[i] = true;
+        if(i == LastNode+1)
+            LastNode++;
+    }
+  
+    private int countOfOne(int Z)
+    {
+        int numberOfTargetsFromThis=0;
+        for(int j=0; j<ParallelResult.size() ; j++)
+        {
+            nodePair np = (nodePair) ParallelResult.get(j);
+            if(np.value() == Z)
+            {
+                numberOfTargetsFromThis++;
+            }
+        }
+        return numberOfTargetsFromThis;
+    }
+    
+    private void findTargetNodesByThread() throws IOException, InterruptedException, ExecutionException
+    {
+        //Log
+        String f="(";
+        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        nodePair np;
+        int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
+        for(int i=1; i<=K ; i++)
+        {
+            if(IsFined[i] == false)
+            {
+                if(P[i]> FirstArrayLastIndex)
+                {
+                    findTargetNodeAmongCandidateNodesByThread(i);
+                }
+                else
+                {
+                    np = (nodePair) CandidateNodes[i].get(0);
+                    int Z = np.key();
+                    int T = np.value();
+                    int c=0;
+                    if(A[i]<= T)
+                    {
+                        addToResult(i, Z, dataTargetNodes);
+                        continue;
+                    }
+                    
+                    int j=1;
+                    while(j<CandidateNodes[i].size())
+                    {
+                        np = (nodePair) CandidateNodes[i].get(j);
+                        Z = np.key();
+                        T = np.value();
+                        c=countOfOne( Z);
+                        if(A[i]<=T+c)
+                        {
+                            addToResult(i, Z, dataTargetNodes);
+                            break;
+                        }
+                        j++;
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    
+    private void findTargetNodeAmongCandidateNodesByThread(int i ) throws InterruptedException, ExecutionException
+    {
+        Set<Future> set = new HashSet<>();
+        for(int j=0 ; j<CandidateNodes[i].size() ; j++)
+        {
+           nodePair np = (nodePair) CandidateNodes[i].get(j);
+           Future future = executor.submit(new Task2(i , np));
+           set.add(future);
+        }
+         //wait for task completion
+        for(Future currTask : set){
+            try{
+                currTask.get();
+            }
+            catch(Throwable thrown)
+                    {
+                        System.out.println("Error");
+                    }        
+        }
+        
+    }
+    
+    private final class Task2 implements Runnable {
+        
+        nodePair np;
+        int c;
+        int i;
+        Task2(int i , nodePair np){
+          this.np = np;
+          this.i = i;
+          c = countTargetNodesFromThis(np.key());
+        }
+        
+        @Override public void run(){
+            
+            try {
+                CheckThisCandidateNode(i , np , c);
+            } catch (IOException ex) {
+                Logger.getLogger(ParallelBarabasiAlbert.class.getName()).log(Level.SEVERE, null, ex);
+            }
+          
+        }
+    }
+    
+    
+    private int countTargetNodesFromThis(int Z ){
+        
+        int numberOfTargetsFromThis=0;
+        for(int j=0; j<ParallelResult.size() ; j++)
+        {
+            nodePair np = (nodePair) ParallelResult.get(j);
+            if(np.value() >= Z)
+            {
+                numberOfTargetsFromThis++;
+            }
+        }
+        return numberOfTargetsFromThis;
+    }
+    
+    private void CheckThisCandidateNode(int i , nodePair np , int c) throws IOException
+    {
+        
+        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        
+        if(np.value()>0)
+        {
+            if(c>=np.value())
+            {
+                addToResult(i, np.key(), dataTargetNodes); 
+            }
+        }
+        else if(np.value()==0)
+        {
+            if(c==np.value())
+            {
+                addToResult(i, np.key(), dataTargetNodes); 
+            }
+        }
+        else //np.value()<0
+        {
+            if(c==0)
+            {
+                addToResult(i, np.key(), dataTargetNodes);               
+            }
+            
+        }
+        
     }
     
     private Graph UpdatedGraph() throws IOException{

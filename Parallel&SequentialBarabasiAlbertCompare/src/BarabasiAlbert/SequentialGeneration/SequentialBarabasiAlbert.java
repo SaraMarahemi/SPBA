@@ -29,6 +29,8 @@ public class SequentialBarabasiAlbert {
     //D & P Array
         int[] D;
         int[] P;
+    //Target nodes list
+        List SequentialResult;
     
     public SequentialBarabasiAlbert(Graph firstGraph , int[] D , int[] P) throws IOException {
         
@@ -94,17 +96,23 @@ public class SequentialBarabasiAlbert {
        
     }
     
+    private void initialize()
+    {
+        //Target nodes list
+        List SR = new LinkedList<>();
+        SequentialResult = SR;
+    }
+    
     public Graph makeSequentialBarabasiAlbert(int i) throws InterruptedException, ExecutionException, IOException{
         
         K=i;
-        List ResultForFindTargetNodesSequentially = new LinkedList<>();
-        getResultsOfAddingKNodesToGraph(ResultForFindTargetNodesSequentially );
-        //ShowUpdatedGraph(ResultForFindTargetNodesParallel);  
-        Graph newGraph = UpdatedGraph(ResultForFindTargetNodesSequentially );
+        initialize();
+        getResultsOfAddingKNodesToGraph();
+        Graph newGraph = UpdatedGraph();
         return newGraph;
     }
     
-    private void getResultsOfAddingKNodesToGraph(List SequentialResult ) throws InterruptedException, ExecutionException, IOException
+    private void getResultsOfAddingKNodesToGraph( ) throws InterruptedException, ExecutionException, IOException
     { 
         //Time
         temp = 0;
@@ -151,9 +159,9 @@ public class SequentialBarabasiAlbert {
         }
     }
     
-    private Graph UpdatedGraph(List Result) throws IOException{
+    private Graph UpdatedGraph() throws IOException{
        
-        Graph NewGraph = new SingleGraph("ParallelNewGraph");
+        Graph NewGraph = new SingleGraph("SequentialNewGraph");
         
         for(Node node : graph)
         {
@@ -162,91 +170,38 @@ public class SequentialBarabasiAlbert {
                 Node node0 = edge.getNode0();
                 Node node1 = edge.getNode1();
                 
-                if(NewGraph.getNode(String.valueOf(node0.getIndex()+1)) == null)
+                if(NewGraph.getNode(String.valueOf(node0.getIndex())) == null)
                 {
-                    NewGraph.addNode(String.valueOf(node0.getIndex()+1));
+                    NewGraph.addNode(String.valueOf(node0.getIndex()));
                 }
                 
-                if(NewGraph.getNode(String.valueOf(node1.getIndex()+1)) == null)
+                if(NewGraph.getNode(String.valueOf(node1.getIndex())) == null)
                 {
-                    NewGraph.addNode(String.valueOf(node1.getIndex()+1));
+                    NewGraph.addNode(String.valueOf(node1.getIndex()));
                 }
-                if(NewGraph.getEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1))) == null)
-                    NewGraph.addEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1)),String.valueOf(node0.getIndex()+1), String.valueOf(node1.getIndex()+1));          
+                if(NewGraph.getEdge(String.valueOf(node0.getIndex()).concat(String.valueOf(node1.getIndex()))) == null)
+                    NewGraph.addEdge(String.valueOf(node0.getIndex()).concat(String.valueOf(node1.getIndex())),String.valueOf(node0.getIndex()), String.valueOf(node1.getIndex()));          
             }
         }
- 
-        for(int j=0; j<Result.size() ; j++)
+        
+        for(int j=0; j<SequentialResult.size() ; j++)
         {
-            nodePair np = (nodePair) Result.get(j);   
-            NewGraph.addNode(String.valueOf(np.key()));
-            NewGraph.addEdge(String.valueOf(np.key()).concat(String.valueOf(np.value())), String.valueOf(np.key()), String.valueOf(np.value()));
+            nodePair np = (nodePair) SequentialResult.get(j);   
+            if(NewGraph.getNode(String.valueOf(np.key())) == null)
+            {
+                NewGraph.addNode(String.valueOf(np.key()));
+            }
+            if(NewGraph.getNode(String.valueOf(np.value())) == null)
+            {
+                NewGraph.addNode(String.valueOf(np.value()));
+            }
+            if(NewGraph.getEdge(String.valueOf(np.key()).concat("&").concat(String.valueOf(np.value()))) == null)
+                NewGraph.addEdge(String.valueOf(np.key()).concat("&").concat(String.valueOf(np.value())), String.valueOf(np.key()), String.valueOf(np.value()));
         }
         return NewGraph;
               
     }
     
-    
-    //In Comment
-    private void ShowUpdatedGraph(List Result) throws IOException{
-        
-        String styleSheet =
-            "node {" +
-            "	fill-color: black;" +
-            "}" +
-            "node.marked {" +
-            "	fill-color: red;" +
-            "}";
-        Graph FirstGraph = new SingleGraph("FirstGraph");
-        Graph NewGraph = new SingleGraph("NewGraph");
-        NewGraph.addAttribute("ui.stylesheet", styleSheet);
-        for(Node node : graph)
-        {
-            for(Edge edge : node.getEachEdge() )
-            {
-                Node node0 = edge.getNode0();
-                Node node1 = edge.getNode1();
-                
-                if(NewGraph.getNode(String.valueOf(node0.getIndex()+1)) == null)
-                {
-                    NewGraph.addNode(String.valueOf(node0.getIndex()+1));
-                    NewGraph.getNode(String.valueOf(node0.getIndex()+1)).addAttribute("ui.label", String.valueOf(node0.getIndex()+1));
-                }
-                
-                if(NewGraph.getNode(String.valueOf(node1.getIndex()+1)) == null)
-                {
-                    NewGraph.addNode(String.valueOf(node1.getIndex()+1));
-                    NewGraph.getNode(String.valueOf(node1.getIndex()+1)).addAttribute("ui.label", String.valueOf(node1.getIndex()+1));
-                }
-                if(NewGraph.getEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1))) == null)
-                    NewGraph.addEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1)),String.valueOf(node0.getIndex()+1), String.valueOf(node1.getIndex()+1));
-                //First Graph
-                if(FirstGraph.getNode(String.valueOf(node0.getIndex()+1)) == null)
-                {
-                    FirstGraph.addNode(String.valueOf(node0.getIndex()+1));
-                    FirstGraph.getNode(String.valueOf(node0.getIndex()+1)).addAttribute("ui.label", String.valueOf(node0.getIndex()+1));
-                }
-                if(FirstGraph.getNode(String.valueOf(node1.getIndex()+1)) == null)
-                {
-                    FirstGraph.addNode(String.valueOf(node1.getIndex()+1));
-                    FirstGraph.getNode(String.valueOf(node1.getIndex()+1)).addAttribute("ui.label", String.valueOf(node1.getIndex()+1));
-                }
-                if(FirstGraph.getEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1))) == null)
-                    FirstGraph.addEdge(String.valueOf(node0.getIndex()+1).concat(String.valueOf(node1.getIndex()+1)),String.valueOf(node0.getIndex()+1), String.valueOf(node1.getIndex()+1));
-            }
-        }
-        FirstGraph.display();
-        for(int j=0; j<Result.size() ; j++)
-        {
-            nodePair np = (nodePair) Result.get(j);   
-            NewGraph.addNode(String.valueOf(np.key()));
-            NewGraph.getNode(String.valueOf(np.key())).addAttribute("ui.label", String.valueOf(np.key()));
-            NewGraph.addEdge(String.valueOf(np.key()).concat(String.valueOf(np.value())), String.valueOf(np.key()), String.valueOf(np.value()));
-            NewGraph.getNode(String.valueOf(np.key())).setAttribute("ui.class", "marked");
-        }
-        NewGraph.display();
-              
-    }
 }
     
    
