@@ -15,10 +15,10 @@ import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.*;
 public class InitializeBarabasiAlbertGenerators {
     
-    public static final int V = 10000;
+    public static final int V = 1000;
     public static final int m = 1;
-    public static final int K = 3;
-    public static final int n = 1000;
+    public static final int K = 5;
+    public static final int n = 100;
 
     public static void main(String[] args) throws InterruptedException, ExecutionException, IOException{
         
@@ -107,7 +107,7 @@ public class InitializeBarabasiAlbertGenerators {
     private static Graph generateFirstGraph()
     {
         Graph graph = new SingleGraph("Barabàsi-Albert");
-        Generator gen = new BarabasiAlbertGenerator(m);
+        Generator gen = new BarabasiAlbertGenerator(m,true);
         gen.addSink(graph); 
         gen.begin();
         for(int i=0; i<V-2; i++) // Generate V-2 nodes
