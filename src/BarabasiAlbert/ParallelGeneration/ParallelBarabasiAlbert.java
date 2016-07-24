@@ -9,7 +9,6 @@ package BarabasiAlbert.ParallelGeneration;
 import barabasigenerator.WriteFile;
 import barabasigenerator.nodePair;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
