@@ -21,10 +21,15 @@ public class BarabasiGenerator {
     public static final int V = 1000;
     public static final int m = 1;
     public static final int K = 5;
-    public static final int n = 500;
+    public static final int n = 2000;
+    public static final boolean Parallel = false;
+    public static final boolean Sequential = true;
+    public static final boolean ForOn = true;
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-         System.out.println("K : "+K);
+        System.out.println("K : "+K);
         System.out.println("V : "+V);
+        System.out.println("n : "+n);
+        
         //Time
         long startTime = System.nanoTime();    
         //Generate First Graph
@@ -32,83 +37,89 @@ public class BarabasiGenerator {
         //Time
         long estimatedTime = System.nanoTime() - startTime;
         System.out.println("1 : Time to generate first graph : "+estimatedTime+" ns");
+        
         //Necessary Change
         Graph FirstGraph = new SingleGraph("FirstGraphForParallel");
         Graph FirstGraphS = new SingleGraph("FirstGraphForSequential");
         changeFirstGraph(generatedFirstGraph, FirstGraph, FirstGraphS);
+        
         //necessaryArrayGenerator
         necessaryArrayGenerator P_D_Generator = new necessaryArrayGenerator(K,FirstGraphS);
         int[] D = P_D_Generator.makeDArrayFromFirstGraph();
         int[] P = P_D_Generator.makeRandomNumbers();
         
-        
+        Graph NewSequentialGraph;
+        Graph NewParallelGraph;
         //SequentialBarabasiAlbert
         SequentialBarabasiAlbert sequentialGenerator = new SequentialBarabasiAlbert(FirstGraphS,D,P);
-        Graph NewSequentialGraph = sequentialGenerator.makeSequentialBarabasiAlbert(K);
+        if(Sequential)
+        {
+            NewSequentialGraph = sequentialGenerator.makeSequentialBarabasiAlbert(K);
+        }
         
         //ParallelBarabasiAlbert 
         ParallelBarabasiAlbert parallelGenerator = new ParallelBarabasiAlbert(FirstGraph,D,P);
-        Graph NewParallelGraph = parallelGenerator.makeParallelBarabasiAlbert(K);
-        
-        int Scounter = 0;
-        int Fcounter = 0;
-        if(sequentialGenerator.getTempTime() > parallelGenerator.getTempTime())
+        if(Parallel)
         {
-            System.out.println("$$ ---- SUCCESSFUL ---- $$");
-            Scounter ++;
-        }
-        else
-        {
-            System.out.println("$$ ---- FAILED ---- $$");
-            Fcounter ++;
+            NewParallelGraph = parallelGenerator.makeParallelBarabasiAlbert(K);
         }
         
         
+        if(ForOn)
+        {
         for(int i=1 ; i<(n) ; i++)
         {
             
-            P_D_Generator.setGraph(NewSequentialGraph);
-            D = P_D_Generator.makeDArrayFromFirstGraph();
-            P = P_D_Generator.makeRandomNumbers();
+            
+            
             //Sequential
+            if(Sequential)
+            {
+                P_D_Generator.setGraph(NewSequentialGraph);
+                D = P_D_Generator.makeDArrayFromFirstGraph();
+                P = P_D_Generator.makeRandomNumbers();
                 //Time
                 startTime = System.nanoTime();
-            sequentialGenerator.setGraph(NewSequentialGraph);
-            sequentialGenerator.setD(D);
-            sequentialGenerator.setP(P);
-            NewSequentialGraph = sequentialGenerator.makeSequentialBarabasiAlbert(K);
+                sequentialGenerator.setGraph(NewSequentialGraph);
+                sequentialGenerator.setD(D);
+                sequentialGenerator.setP(P);
+                sequentialGenerator.makeSequentialBarabasiAlbert(K);
                 //Time
                 estimatedTime = System.nanoTime() - startTime;
                 sequentialGenerator.addToTotalTime(estimatedTime);
+                
+                Graph newS = new SingleGraph("newSequential");
+                makeSequentialGraph(NewSequentialGraph, newS);
+            }
+            
             //Parallel
+            if(Parallel)
+            {
+                P_D_Generator.setGraph(NewParallelGraph);
+                D = P_D_Generator.makeDArrayFromFirstGraph();
+                P = P_D_Generator.makeRandomNumbers();
                 //Time
                 startTime = System.nanoTime();
-            parallelGenerator.setGraph(NewParallelGraph);
-            parallelGenerator.setD(D);
-            parallelGenerator.setP(P);
-            NewParallelGraph = parallelGenerator.makeParallelBarabasiAlbert(K);
+                parallelGenerator.setGraph(NewParallelGraph);
+                parallelGenerator.setD(D);
+                parallelGenerator.setP(P);
+                parallelGenerator.makeParallelBarabasiAlbert(K);
                 //Time
                 estimatedTime = System.nanoTime() - startTime;
                 parallelGenerator.addToTotalTime(estimatedTime);
                 
                 Graph newP = new SingleGraph("newParallel");
-                Graph newS = new SingleGraph("newSequential");
-                makeGraph(NewParallelGraph, NewSequentialGraph, newP, newS);
-                if(sequentialGenerator.getTempTime() > parallelGenerator.getTempTime())
-                {
-                    System.out.println("$$ --- SUCCESSFUL --- $$");
-                    Scounter ++;
-                }
-                else
-                {
-                    System.out.println("$$ --- FAILED --- $$");
-                    Fcounter ++;
-                }
+                makeParallelGraph(NewParallelGraph, newP);
+            }   
+                
+                
+                
+                
+        }
         }
         System.out.println("Sequential Total Time : "+sequentialGenerator.getTotalTime()+" ns");
         System.out.println("**Parallel Total Time : "+parallelGenerator.getTotalTime()+" ns");
-        System.out.println("Successful : "+Scounter);
-        System.out.println("Failed : "+Fcounter);
+        
                 
         parallelGenerator.CloseExecutor();
     }
@@ -159,7 +170,8 @@ public class BarabasiGenerator {
         }
             
     }
-    private static void makeGraph(Graph NewParallelGraph , Graph NewSequentialGraph , Graph newP , Graph newS)
+    
+    private static void makeParallelGraph(Graph NewParallelGraph , Graph newP)
     {
         for(Node node : NewParallelGraph)
         {
@@ -183,6 +195,9 @@ public class BarabasiGenerator {
                 }
             }
         }
+    }
+    private static void makeSequentialGraph(Graph NewSequentialGraph , Graph newS)
+    {
         for(Node node : NewSequentialGraph)
         {
             for(Edge edge : node.getEachEdge() )

@@ -62,7 +62,7 @@ public class ParallelBarabasiAlbert {
             this.D = D;
             this.P = P;
         //Log
-            prepareLogFiles();
+            //prepareLogFiles();
         //Time
             totalTime = 0;
         
@@ -387,8 +387,8 @@ public class ParallelBarabasiAlbert {
     {
         List R = new LinkedList<>();
         int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        //String f="(";
+        //WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
         nodePair np;
         if( IsFined[i] == false)
         {
@@ -397,7 +397,7 @@ public class ParallelBarabasiAlbert {
             np = (nodePair) CandidateNodes[i].get(0);
             nodePair PairNode = new nodePair(V+i, np.key());
             R.add(PairNode);
-            dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+            //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
             IsFined[i] = true;
             if(i == LastNode+1)
                 LastNode++;
@@ -410,7 +410,7 @@ public class ParallelBarabasiAlbert {
             {
                         nodePair PairNode = new nodePair(V+i, np.key());
                         R.add(PairNode);
-                        dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                        //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                         IsFined[i] = true;
                         if(i == LastNode+1)
                             LastNode++;
@@ -431,7 +431,7 @@ public class ParallelBarabasiAlbert {
                         {
                             nodePair PairNode = new nodePair(V+i, Z);
                             R.add(PairNode);
-                            dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                            //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                             if(i == LastNode+1)
                                 LastNode++;
                             break;
@@ -441,7 +441,7 @@ public class ParallelBarabasiAlbert {
                         {
                             nodePair PairNode = new nodePair(V+i, Z);
                             R.add(PairNode);
-                            dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                            //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                             IsFined[i] = true;
                             if(i == LastNode+1)
                                 LastNode++;
@@ -469,8 +469,8 @@ public class ParallelBarabasiAlbert {
     private void findTargetNodesByThread() throws IOException, InterruptedException, ExecutionException
     {
         //Log
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        //String f="(";
+        //WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
         nodePair np;
         int FirstArrayLastIndex = (graph.getEdgeCount()*2)+V;
         for(int i=1; i<=K ; i++)
@@ -483,7 +483,7 @@ public class ParallelBarabasiAlbert {
                     nodePair PairNode = new nodePair(V+i, np.key());
                     //targetResults[i].add(PairNode);
                     ParallelResult.add(PairNode);
-                    dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                    //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                     IsFined[i] = true;
                     if(i == LastNode+1)
                         LastNode++;
@@ -503,7 +503,7 @@ public class ParallelBarabasiAlbert {
                     {
                         nodePair PairNode = new nodePair(V+i, Z);
                         ParallelResult.add(PairNode);
-                        dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                        //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                          IsFined[i] = true;
                         if(i == LastNode+1)
                             LastNode++;
@@ -520,7 +520,7 @@ public class ParallelBarabasiAlbert {
                         {
                             nodePair PairNode = new nodePair(V+i, Z);
                             ParallelResult.add(PairNode);
-                            dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                            //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                              IsFined[i] = true;
                             if(i == LastNode+1)
                                 LastNode++;
@@ -531,7 +531,7 @@ public class ParallelBarabasiAlbert {
                         {
                             nodePair PairNode = new nodePair(V+i, Z);
                             ParallelResult.add(PairNode);
-                           dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
+                           //dataTargetNodes.writeToFile(f.concat(String.valueOf(PairNode.key()).concat(",").concat(String.valueOf(PairNode.value())).concat(")")), true);
                              IsFined[i] = true;
                             if(i == LastNode+1)
                                 LastNode++;
@@ -603,8 +603,8 @@ public class ParallelBarabasiAlbert {
     
     private void CheckThisCandidateNode(int i , nodePair np , int c) throws IOException
     {
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
+        //String f="(";
+        //WriteFile dataTargetNodes = new WriteFile( "ParallelBarabasiAlbertResult.txt" , true );
         
         if(np.value()>0)
         {
@@ -612,7 +612,7 @@ public class ParallelBarabasiAlbert {
             {
                 nodePair PairNode = new nodePair(V+i, np.key());
                 ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
+                //dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
                 IsFined[i] = true;
                 if(i == LastNode+1)
                     LastNode++;
@@ -625,7 +625,7 @@ public class ParallelBarabasiAlbert {
             {
                 nodePair PairNode = new nodePair(V+i, np.key());
                 ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
+                //dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
                 IsFined[i] = true;
                 if(i == LastNode+1)
                     LastNode++;
@@ -638,7 +638,7 @@ public class ParallelBarabasiAlbert {
             {
                 nodePair PairNode = new nodePair(V+i, np.key());
                 ParallelResult.add(PairNode);
-                dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
+                //dataTargetNodes.writeToFile(f.concat(String.valueOf(V+i).concat(",").concat(String.valueOf(np.key())).concat(")")), true);
                 IsFined[i] = true;
                 if(i == LastNode+1)
                     LastNode++;   
@@ -649,8 +649,8 @@ public class ParallelBarabasiAlbert {
     private Graph UpdatedGraph() throws IOException
     {
         //log
-        String f="(";
-        WriteFile dataTargetNodes = new WriteFile( "PUpdatedGraph.txt" , true );
+        //String f="(";
+        //WriteFile dataTargetNodes = new WriteFile( "PUpdatedGraph.txt" , true );
         
         int index = ParallelResult.indexOf(null);
         int bound = ParallelResult.size();
@@ -672,7 +672,7 @@ public class ParallelBarabasiAlbert {
             if(graph.getEdge(node0ID.concat("_").concat(node1ID)) == null)
             {
                  graph.addEdge(node0ID.concat("_").concat(node1ID), node0ID, node1ID);
-                 dataTargetNodes.writeToFile(f.concat(node0ID).concat(",").concat(node1ID).concat(")"), true);
+                 //dataTargetNodes.writeToFile(f.concat(node0ID).concat(",").concat(node1ID).concat(")"), true);
             }           
         }
         return graph;
