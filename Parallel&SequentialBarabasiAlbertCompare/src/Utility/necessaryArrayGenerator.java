@@ -1,10 +1,9 @@
 
 package Utility;
 
-import static Utility.InitializeBarabasiAlbertGenerators.K;
+import GraphHandling.Graph;
+import GraphHandling.Node;
 import java.util.Random;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
 
 /**
  *
@@ -56,8 +55,8 @@ public class necessaryArrayGenerator {
        
         int[] Degree = new int[graph.getNodeCount()+1];
         int j=1;
-        for (Node node : graph) {
-            Degree[j] = node.getDegree();
+        for (Node node : graph.getVertexList()) {
+            Degree[j] = node.getAdjacentVertex().size();
             j++;      
         }
         
