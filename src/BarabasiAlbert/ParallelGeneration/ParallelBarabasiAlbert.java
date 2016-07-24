@@ -125,7 +125,7 @@ public class ParallelBarabasiAlbert {
        
         WriteFile w3 = new WriteFile("ParallelBarabasiAlbertResult.txt",false);
         w3.writeToFile("", false);
-       //@2
+       
         WriteFile w4 = new WriteFile("PUpdatedGraph.txt",false);
         w4.writeToFile("", false);
        

@@ -96,12 +96,12 @@ public class BarabasiGenerator {
                 makeGraph(NewParallelGraph, NewSequentialGraph, newP, newS);
                 if(sequentialGenerator.getTempTime() > parallelGenerator.getTempTime())
                 {
-                    System.out.println("$$ ---- SUCCESSFUL ---- $$");
+                    System.out.println("$$ --- SUCCESSFUL --- $$");
                     Scounter ++;
                 }
                 else
                 {
-                    System.out.println("$$ ---- FAILED ---- $$");
+                    System.out.println("$$ --- FAILED --- $$");
                     Fcounter ++;
                 }
         }
