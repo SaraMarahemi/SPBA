@@ -5,7 +5,8 @@ package Utility;
  *
  * @author Sarah
  */
-public class nodePair {
+public class nodePair 
+{
     private final int key;
     private final int value;
 
